@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calculator</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f77f00;
+            --info: #4895ef;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e6e6e6;
+            --input-bg: #2d2d2d;
+            --border-color: #404040;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --input-bg: #ffffff;
+            --border-color: #dddddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: var(--primary-light);
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            min-height: 44px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:not(:disabled):hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: var(--gray);
+            color: var(--gray);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            min-height: 36px;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .card-content {
+            display: none;
+        }
+
+        .card.active .card-content {
+            display: block;
+        }
+
+        .card.active .card-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            min-height: 44px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-group > * {
+            flex: 1;
+        }
+
+        .results {
+            background-color: rgba(67, 97, 238, 0.1);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .toggle-content {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .toggle-content.active {
+            display: block;
+        }
+
+        .calculation-details {
+            background-color: rgba(67, 97, 238, 0.05);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            height: 250px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: var(--primary-light);
+            color: white;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 6px;
+            cursor: help;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: var(--border-radius);
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        input.invalid {
+            border-color: var(--danger);
+        }
+
+        input.invalid + .error {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .card, .card * {
+                visibility: visible;
+            }
+            .card {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .btn, header, .footer {
+                display: none !important;
+            }
+            .print-only {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="container">
+        <header>
+            <h1>Financial Calculator</h1>
+            <div class="controls">
+                <button id="theme-toggle" class="btn" aria-label="Toggle dark mode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <select id="currency-select" class="btn">
+                    <option value="USD">USD ($)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="EUR">EUR (€)</option>
+                </select>
+                <button id="clear-storage" class="btn btn-sm" aria-label="Clear saved data">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- EMI Calculator -->
+            <div class="card active" id="emi-calculator">
+                <div class="card-header">
+                    <h2>EMI Calculator</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="emi-principal">Loan Amount</label>
+                        <input type="number" id="emi-principal" min="0" placeholder="Enter loan amount">
+                        <div class="error">Please enter a valid loan amount</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="emi-rate">Annual Interest Rate (%)</label>
+                        <input type="number" id="emi-rate" min="0" max="1000" step="0.01" placeholder="Enter interest rate">
+                        <div class="error">Please enter a valid interest rate (0-1000%)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="emi-tenure">Tenure</label>
+                        <div class="input-group">
+                            <input type="number" id="emi-tenure" min="1" placeholder="Enter tenure">
+                            <select id="emi-tenure-type">
+                                <option value="years">Years</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                        <div class="error">Please enter a valid tenure (1-100 years)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="emi-start-date">Start Date (optional)</label>
+                        <input type="date" id="emi-start-date">
+                    </div>
+                    <button id="calculate-emi" class="btn btn-primary">Calculate EMI</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span>Monthly EMI:</span>
+                            <span id="monthly-emi" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Total Payment:</span>
+                            <span id="total-payment" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Total Interest:</span>
+                            <span id="total-interest" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <button id="toggle-amortization" class="btn btn-sm">Show Amortization Schedule</button>
+                    
+                    <div class="toggle-content" id="amortization-schedule">
+                        <h3>Amortization Schedule</h3>
+                        <div class="table-responsive">
+                            <table id="amortization-table">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Opening Balance</th>
+                                        <th>EMI</th>
+                                        <th>Interest</th>
+                                        <th>Principal</th>
+                                        <th>Closing Balance</th>
+                                        <th>Cumulative Interest</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <button id="download-amortization" class="btn btn-sm">Download CSV</button>
+                    </div>
+                    
+                    <button id="show-emi-calculation" class="btn btn-sm">Show Calculation Details</button>
+                    
+                    <div class="calculation-details toggle-content" id="emi-calculation-details">
+                        <h3>EMI Calculation Formula</h3>
+                        <p>EMI = [P x R x (1+R)^N] / [(1+R)^N-1]</p>
+                        <p>Where:</p>
+                        <ul>
+                            <li>P = Loan principal amount</li>
+                            <li>R = Monthly interest rate (annual rate ÷ 12 ÷ 100)</li>
+                            <li>N = Loan tenure in months</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple & Compound Interest Calculator -->
+            <div class="card" id="interest-calculator">
+                <div class="card-header">
+                    <h2>Interest Calculator</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="interest-principal">Principal Amount</label>
+                        <input type="number" id="interest-principal" min="0" placeholder="Enter principal amount">
+                        <div class="error">Please enter a valid principal amount</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-rate">Annual Interest Rate (%)</label>
+                        <input type="number" id="interest-rate" min="0" max="1000" step="0.01" placeholder="Enter interest rate">
+                        <div class="error">Please enter a valid interest rate (0-1000%)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="interest-time">Time Period (Years)</label>
+                        <input type="number" id="interest-time" min="0" max="100" step="0.5" placeholder="Enter time period">
+                        <div class="error">Please enter a valid time period (0-100 years)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="compounding-frequency">Compounding Frequency</label>
+                        <select id="compounding-frequency">
+                            <option value="1">Annually</option>
+                            <option value="2">Semi-Annually</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12" selected>Monthly</option>
+                            <option value="365">Daily</option>
+                        </select>
+                    </div>
+                    <button id="calculate-interest" class="btn btn-primary">Calculate Interest</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span>Interest Amount:</span>
+                            <span id="interest-amount" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Maturity Value:</span>
+                            <span id="maturity-value" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <button id="show-interest-calculation" class="btn btn-sm">Show Calculation Details</button>
+                    
+                    <div class="calculation-details toggle-content" id="interest-calculation-details">
+                        <h3>Compound Interest Formula</h3>
+                        <p>A = P × (1 + r/n)^(n×t)</p>
+                        <p>Where:</p>
+                        <ul>
+                            <li>A = Maturity amount</li>
+                            <li>P = Principal amount</li>
+                            <li>r = Annual interest rate (decimal)</li>
+                            <li>n = Number of compounding periods per year</li>
+                            <li>t = Time in years</li>
+                        </ul>
+                        <h3>Simple Interest Formula</h3>
+                        <p>SI = P × r × t</p>
+                        <p>Where:</p>
+                        <ul>
+                            <li>SI = Simple Interest</li>
+                            <li>P = Principal amount</li>
+                            <li>r = Annual interest rate (decimal)</li>
+                            <li>t = Time in years</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROI & CAGR Calculator -->
+            <div class="card" id="roi-calculator">
+                <div class="card-header">
+                    <h2>ROI & CAGR Calculator</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="initial-investment">Initial Investment</label>
+                        <input type="number" id="initial-investment" min="0" placeholder="Enter initial investment">
+                        <div class="error">Please enter a valid investment amount</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="final-value">Final Value</label>
+                        <input type="number" id="final-value" min="0" placeholder="Enter final value">
+                        <div class="error">Please enter a valid final value</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="investment-duration">Duration (Years)</label>
+                        <input type="number" id="investment-duration" min="0" max="100" step="0.5" placeholder="Enter duration">
+                        <div class="error">Please enter a valid duration (0-100 years)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="periodic-contributions">Periodic Contributions (Optional)</label>
+                        <div class="input-group">
+                            <input type="number" id="periodic-contributions" min="0" placeholder="Enter contributions">
+                            <select id="contribution-frequency">
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="annually">Annually</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="calculate-roi" class="btn btn-primary">Calculate ROI & CAGR</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span>ROI:</span>
+                            <span id="roi-value" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>CAGR:</span>
+                            <span id="cagr-value" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <button id="show-roi-calculation" class="btn btn-sm">Show Calculation Details</button>
+                    
+                    <div class="calculation-details toggle-content" id="roi-calculation-details">
+                        <h3>ROI Formula</h3>
+                        <p>ROI = [(Final Value - Initial Investment) / Initial Investment] × 100</p>
+                        
+                        <h3>CAGR Formula</h3>
+                        <p>CAGR = [(Final Value / Initial Investment)^(1/n)] - 1</p>
+                        <p>Where n = number of years</p>
+                        
+                        <h3>With Periodic Contributions</h3>
+                        <p>When periodic contributions are provided, the calculator uses an approximation of the XIRR formula to estimate annualized return.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Depreciation Calculator -->
+            <div class="card" id="depreciation-calculator">
+                <div class="card-header">
+                    <h2>Depreciation Calculator</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="depreciation-method">Depreciation Method</label>
+                        <select id="depreciation-method">
+                            <option value="straight-line">Straight Line</option>
+                            <option value="declining-balance">Declining Balance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="asset-cost">Asset Cost</label>
+                        <input type="number" id="asset-cost" min="0" placeholder="Enter asset cost">
+                        <div class="error">Please enter a valid asset cost</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="salvage-value">Salvage Value</label>
+                        <input type="number" id="salvage-value" min="0" placeholder="Enter salvage value">
+                        <div class="error">Please enter a valid salvage value</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="useful-life">Useful Life (Years)</label>
+                        <input type="number" id="useful-life" min="1" max="100" placeholder="Enter useful life">
+                        <div class="error">Please enter a valid useful life (1-100 years)</div>
+                    </div>
+                    <div class="form-group declining-balance-only">
+                        <label for="depreciation-rate">Depreciation Rate (%)</label>
+                        <input type="number" id="depreciation-rate" min="0" max="100" step="0.1" placeholder="Enter depreciation rate">
+                        <div class="error">Please enter a valid depreciation rate (0-100%)</div>
+                    </div>
+                    <div class="form-group declining-balance-only">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="double-declining">
+                            <span>Use Double Declining Balance</span>
+                        </label>
+                    </div>
+                    <button id="calculate-depreciation" class="btn btn-primary">Calculate Depreciation</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span>Annual Depreciation:</span>
+                            <span id="annual-depreciation" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Total Depreciation:</span>
+                            <span id="total-depreciation" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <button id="toggle-depreciation-schedule" class="btn btn-sm">Show Depreciation Schedule</button>
+                    
+                    <div class="toggle-content" id="depreciation-schedule">
+                        <h3>Depreciation Schedule</h3>
+                        <div class="table-responsive">
+                            <table id="depreciation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Beginning Value</th>
+                                        <th>Depreciation</th>
+                                        <th>Accumulated Depreciation</th>
+                                        <th>Ending Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <button id="download-depreciation" class="btn btn-sm">Download CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIP & Lumpsum Calculator -->
+            <div class="card" id="investment-calculator">
+                <div class="card-header">
+                    <h2>Investment Calculator</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="investment-type">Investment Type</label>
+                        <select id="investment-type">
+                            <option value="sip">SIP (Systematic Investment Plan)</option>
+                            <option value="lumpsum">Lumpsum</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="investment-amount" class="sip-only">Monthly Investment</label>
+                        <label for="investment-amount" class="lumpsum-only">Investment Amount</label>
+                        <input type="number" id="investment-amount" min="0" placeholder="Enter investment amount">
+                        <div class="error">Please enter a valid investment amount</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expected-return">Expected Annual Return (%)</label>
+                        <input type="number" id="expected-return" min="0" max="1000" step="0.01" placeholder="Enter expected return">
+                        <div class="error">Please enter a valid expected return (0-1000%)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="investment-tenure">Investment Tenure</label>
+                        <div class="input-group">
+                            <input type="number" id="investment-tenure" min="1" max="100" placeholder="Enter tenure">
+                            <select id="investment-tenure-type">
+                                <option value="years">Years</option>
+                                <option value="months" class="sip-only">Months</option>
+                            </select>
+                        </div>
+                        <div class="error">Please enter a valid tenure</div>
+                    </div>
+                    <button id="calculate-investment" class="btn btn-primary">Calculate Investment</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span class="sip-only">Total Invested:</span>
+                            <span class="lumpsum-only">Principal:</span>
+                            <span id="total-invested" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Maturity Value:</span>
+                            <span id="investment-maturity" class="result-value">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Estimated Returns:</span>
+                            <span id="estimated-returns" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="investment-chart"></canvas>
+                    </div>
+                    
+                    <button id="show-investment-calculation" class="btn btn-sm">Show Calculation Details</button>
+                    
+                    <div class="calculation-details toggle-content" id="investment-calculation-details">
+                        <h3>SIP Calculation Formula</h3>
+                        <p>FV = P × [((1 + r)^n - 1) / r] × (1 + r)</p>
+                        <p>Where:</p>
+                        <ul>
+                            <li>FV = Future Value</li>
+                            <li>P = Monthly investment amount</li>
+                            <li>r = Monthly interest rate (annual rate ÷ 12 ÷ 100)</li>
+                            <li>n = Total number of payments (months)</li>
+                        </ul>
+                        
+                        <h3>Lumpsum Calculation Formula</h3>
+                        <p>FV = P × (1 + r)^n</p>
+                        <p>Where:</p>
+                        <ul>
+                            <li>FV = Future Value</li>
+                            <li>P = Principal investment amount</li>
+                            <li>r = Annual interest rate (decimal)</li>
+                            <li>n = Time in years</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Currency Converter -->
+            <div class="card" id="currency-converter">
+                <div class="card-header">
+                    <h2>Currency Formatter</h2>
+                    <svg class="card-toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="amount-to-format">Amount to Format</label>
+                        <input type="number" id="amount-to-format" placeholder="Enter amount" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="format-currency">Currency</label>
+                        <select id="format-currency">
+                            <option value="USD">USD ($)</option>
+                            <option value="INR">INR (₹)</option>
+                            <option value="EUR">EUR (€)</option>
+                        </select>
+                    </div>
+                    <button id="format-amount" class="btn btn-primary">Format Amount</button>
+                    
+                    <div class="results" aria-live="polite">
+                        <div class="result-item">
+                            <span>Formatted Amount:</span>
+                            <span id="formatted-amount" class="result-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="calculation-details">
+                        <h3>Currency Formatting</h3>
+                        <p>This utility formats numbers according to the selected currency's standard formatting rules.</p>
+                        <p>Note: This is only a formatting tool and does not perform actual currency conversion.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Financial Calculator v1.0 &copy; 2023 | All calculations performed client-side</p>
+            <p class="print-only">Printed on <span id="print-date"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('theme-toggle');
+        const currencySelect = document.getElementById('currency-select');
+        const clearStorageBtn = document.getElementById('clear-storage');
+        const cards = document.querySelectorAll('.card');
+        
+        // Format currency based on selection
+        function formatCurrency(amount, currency = null) {
+            if (amount === null || amount === undefined || isNaN(amount)) return '-';
+            
+            const curr = currency || currencySelect.value;
+            const formatter = new Intl.NumberFormat(getLocaleFromCurrency(curr), {
+                style: 'currency',
+                currency: curr,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            return formatter.format(amount);
+        }
+        
+        function getLocaleFromCurrency(currency) {
+            switch(currency) {
+                case 'USD': return 'en-US';
+                case 'INR': return 'en-IN';
+                case 'EUR': return 'de-DE'; // Germany uses comma as decimal separator
+                default: return 'en-US';
+            }
+        }
+        
+        // Get currency symbol
+        function getCurrencySymbol(currency = null) {
+            const curr = currency || currencySelect.value;
+            switch(curr) {
+                case 'USD': return '$';
+                case 'INR': return '₹';
+                case 'EUR': return '€';
+                default: return '$';
+            }
+        }
+        
+        // Create ripple effect on buttons
+        function createRipple(event) {
+            const button = event.currentTarget;
+            if (button.querySelector('.ripple')) return;
+            
+            const circle = document.createElement('span');
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            
+            const rect = button.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add('ripple');
+            
+            const ripple = button.getElementsByClassName('ripple')[0];
+            if (ripple) ripple.remove();
+            
+            button.appendChild(circle);
+            
+            setTimeout(() => {
+                circle.remove();
+            }, 600);
+        }
+        
+        // Add ripple effect to all buttons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', createRipple);
+        });
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        // Toggle card content
+        cards.forEach(card => {
+            const header = card.querySelector('.card-header');
+            header.addEventListener('click', () => {
+                // Close all other cards
+                cards.forEach(c => {
+                    if (c !== card) c.classList.remove('active');
+                });
+                
+                // Toggle current card
+                card.classList.toggle('active');
+            });
+        });
+        
+        // Clear localStorage
+        clearStorageBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all saved data?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        });
+        
+        // Load saved preferences
+        function loadPreferences() {
+            // Load theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('data-theme', savedTheme);
+            }
+            
+            // Load currency
+            const savedCurrency = localStorage.getItem('currency');
+            if (savedCurrency) {
+                currencySelect.value = savedCurrency;
+            }
+        }
+        
+        // Save preferences
+        currencySelect.addEventListener('change', () => {
+            localStorage.setItem('currency', currencySelect.value);
+        });
+        
+        // Initialize
+        loadPreferences();
+        
+        // EMI Calculator
+        const calculateEMIBtn = document.getElementById('calculate-emi');
+        const toggleAmortizationBtn = document.getElementById('toggle-amortization');
+        const amortizationSchedule = document.getElementById('amortization-schedule');
+        const downloadAmortizationBtn = document.getElementById('download-amortization');
+        const showEMICalculationBtn = document.getElementById('show-emi-calculation');
+        const emiCalculationDetails = document.getElementById('emi-calculation-details');
+        
+        calculateEMIBtn.addEventListener('click', calculateEMI);
+        toggleAmortizationBtn.addEventListener('click', () => {
+            amortizationSchedule.classList.toggle('active');
+            toggleAmortizationBtn.textContent = amortizationSchedule.classList.contains('active') ? 
+                'Hide Amortization Schedule' : 'Show Amortization Schedule';
+        });
+        
+        showEMICalculationBtn.addEventListener('click', () => {
+            emiCalculationDetails.classList.toggle('active');
+            showEMICalculationBtn.textContent = emiCalculationDetails.classList.contains('active') ? 
+                'Hide Calculation Details' : 'Show Calculation Details';
+        });
+        
+        downloadAmortizationBtn.addEventListener('click', downloadAmortizationCSV);
+        
+        function calculateEMI() {
+            const principal = parseFloat(document.getElementById('emi-principal').value);
+            const annualRate = parseFloat(document.getElementById('emi-rate').value);
+            const tenure = parseFloat(document.getElementById('emi-tenure').value);
+            const tenureType = document.getElementById('emi-tenure-type').value;
+            const startDate = document.getElementById('emi-start-date').value;
+            
+            // Validate inputs
+            if (!principal || !annualRate || !tenure) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (principal <= 0 || annualRate <= 0 || tenure <= 0) {
+                alert('Values must be greater than zero');
+                return;
+            }
+            
+            // Convert tenure to months if in years
+            const tenureMonths = tenureType === 'years' ? tenure * 12 : tenure;
+            
+            // Calculate monthly interest rate
+            const monthlyRate = annualRate / 12 / 100;
+            
+            // Calculate EMI
+            const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths) / 
+                        (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+            
+            // Calculate total payment and interest
+            const totalPayment = emi * tenureMonths;
+            const totalInterest = totalPayment - principal;
+            
+            // Display results
+            document.getElementById('monthly-emi').textContent = formatCurrency(emi);
+            document.getElementById('total-payment').textContent = formatCurrency(totalPayment);
+            document.getElementById('total-interest').textContent = formatCurrency(totalInterest);
+            
+            // Generate amortization schedule
+            generateAmortizationSchedule(principal, annualRate, tenureMonths, startDate);
+        }
+        
+        function generateAmortizationSchedule(principal, annualRate, tenureMonths, startDate) {
+            const monthlyRate = annualRate / 12 / 100;
+            const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths) / 
+                        (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+            
+            let openingBalance = principal;
+            let cumulativeInterest = 0;
+            const tableBody = document.querySelector('#amortization-table tbody');
+            tableBody.innerHTML = '';
+            
+            let currentDate = startDate ? new Date(startDate) : new Date();
+            
+            for (let month = 1; month <= tenureMonths; month++) {
+                const interestComponent = openingBalance * monthlyRate;
+                const principalComponent = emi - interestComponent;
+                const closingBalance = openingBalance - principalComponent;
+                cumulativeInterest += interestComponent;
+                
+                const row = document.createElement('tr');
+                
+                // Format date for display
+                let displayDate = '';
+                if (startDate) {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    displayDate = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+                }
+                
+                row.innerHTML = `
+                    <td>${month}${displayDate ? `<br><small>${displayDate}</small>` : ''}</td>
+                    <td>${formatCurrency(openingBalance)}</td>
+                    <td>${formatCurrency(emi)}</td>
+                    <td>${formatCurrency(interestComponent)}</td>
+                    <td>${formatCurrency(principalComponent)}</td>
+                    <td>${formatCurrency(closingBalance)}</td>
+                    <td>${formatCurrency(cumulativeInterest)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+                openingBalance = closingBalance;
+            }
+        }
+        
+        function downloadAmortizationCSV() {
+            const rows = [];
+            const headers = ['Month', 'Opening Balance', 'EMI', 'Interest', 'Principal', 'Closing Balance', 'Cumulative Interest'];
+            rows.push(headers.join(','));
+            
+            const tableRows = document.querySelectorAll('#amortization-table tbody tr');
+            tableRows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const rowData = [];
+                cols.forEach(col => {
+                    // Extract text without HTML tags
+                    let text = col.textContent;
+                    // Remove currency symbols and commas for CSV
+                    text = text.replace(/[^\d.-]/g, '');
+                    rowData.push(text);
+                });
+                rows.push(rowData.join(','));
+            });
+            
+            const csvContent = rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'amortization_schedule.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Interest Calculator
+        const calculateInterestBtn = document.getElementById('calculate-interest');
+        const showInterestCalculationBtn = document.getElementById('show-interest-calculation');
+        const interestCalculationDetails = document.getElementById('interest-calculation-details');
+        
+        calculateInterestBtn.addEventListener('click', calculateInterest);
+        showInterestCalculationBtn.addEventListener('click', () => {
+            interestCalculationDetails.classList.toggle('active');
+            showInterestCalculationBtn.textContent = interestCalculationDetails.classList.contains('active') ? 
+                'Hide Calculation Details' : 'Show Calculation Details';
+        });
+        
+        function calculateInterest() {
+            const principal = parseFloat(document.getElementById('interest-principal').value);
+            const annualRate = parseFloat(document.getElementById('interest-rate').value);
+            const time = parseFloat(document.getElementById('interest-time').value);
+            const compoundingFrequency = parseInt(document.getElementById('compounding-frequency').value);
+            
+            // Validate inputs
+            if (!principal || !annualRate || !time) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (principal <= 0 || annualRate <= 0 || time <= 0) {
+                alert('Values must be greater than zero');
+                return;
+            }
+            
+            // Calculate compound interest
+            const rateDecimal = annualRate / 100;
+            const amount = principal * Math.pow(1 + rateDecimal / compoundingFrequency, compoundingFrequency * time);
+            const interestAmount = amount - principal;
+            
+            // Display results
+            document.getElementById('interest-amount').textContent = formatCurrency(interestAmount);
+            document.getElementById('maturity-value').textContent = formatCurrency(amount);
+        }
+        
+        // ROI Calculator
+        const calculateROIBtn = document.getElementById('calculate-roi');
+        const showROICalculationBtn = document.getElementById('show-roi-calculation');
+        const roiCalculationDetails = document.getElementById('roi-calculation-details');
+        
+        calculateROIBtn.addEventListener('click', calculateROI);
+        showROICalculationBtn.addEventListener('click', () => {
+            roiCalculationDetails.classList.toggle('active');
+            showROICalculationBtn.textContent = roiCalculationDetails.classList.contains('active') ? 
+                'Hide Calculation Details' : 'Show Calculation Details';
+        });
+        
+        function calculateROI() {
+            const initialInvestment = parseFloat(document.getElementById('initial-investment').value);
+            const finalValue = parseFloat(document.getElementById('final-value').value);
+            const duration = parseFloat(document.getElementById('investment-duration').value);
+            const periodicContributions = parseFloat(document.getElementById('periodic-contributions').value) || 0;
+            const contributionFrequency = document.getElementById('contribution-frequency').value;
+            
+            // Validate inputs
+            if (!initialInvestment || !finalValue || !duration) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (initialInvestment <= 0 || finalValue <= 0 || duration <= 0) {
+                alert('Values must be greater than zero');
+                return;
+            }
+            
+            // Calculate ROI
+            const roi = ((finalValue - initialInvestment) / initialInvestment) * 100;
+            
+            // Calculate CAGR
+            let cagr = 0;
+            if (periodicContributions > 0) {
+                // Approximate XIRR for periodic contributions
+                cagr = approximateXIRR(initialInvestment, finalValue, duration, periodicContributions, contributionFrequency);
+            } else {
+                cagr = (Math.pow(finalValue / initialInvestment, 1 / duration) - 1) * 100;
+            }
+            
+            // Display results
+            document.getElementById('roi-value').textContent = `${roi.toFixed(2)}%`;
+            document.getElementById('cagr-value').textContent = `${cagr.toFixed(2)}%`;
+        }
+        
+        function approximateXIRR(initial, final, years, contribution, frequency) {
+            // This is a simplified approximation for demonstration
+            // A real XIRR calculation would be more complex
+            const totalContributions = calculateTotalContributions(years, contribution, frequency);
+            const totalValue = initial + totalContributions;
+            return (Math.pow(final / totalValue, 1 / years) - 1) * 100;
+        }
+        
+        function calculateTotalContributions(years, contribution, frequency) {
+            switch(frequency) {
+                case 'monthly': return contribution * years * 12;
+                case 'quarterly': return contribution * years * 4;
+                case 'annually': return contribution * years;
+                default: return contribution * years * 12;
+            }
+        }
+        
+        // Depreciation Calculator
+        const depreciationMethod = document.getElementById('depreciation-method');
+        const calculateDepreciationBtn = document.getElementById('calculate-depreciation');
+        const toggleDepreciationScheduleBtn = document.getElementById('toggle-depreciation-schedule');
+        const depreciationSchedule = document.getElementById('depreciation-schedule');
+        const downloadDepreciationBtn = document.getElementById('download-depreciation');
+        const doubleDecliningCheckbox = document.getElementById('double-declining');
+        
+        // Toggle declining balance options based on method selection
+        depreciationMethod.addEventListener('change', () => {
+            document.querySelectorAll('.declining-balance-only').forEach(el => {
+                el.style.display = depreciationMethod.value === 'declining-balance' ? 'block' : 'none';
+            });
+        });
+        
+        calculateDepreciationBtn.addEventListener('click', calculateDepreciation);
+        toggleDepreciationScheduleBtn.addEventListener('click', () => {
+            depreciationSchedule.classList.toggle('active');
+            toggleDepreciationScheduleBtn.textContent = depreciationSchedule.classList.contains('active') ? 
+                'Hide Depreciation Schedule' : 'Show Depreciation Schedule';
+        });
+        
+        downloadDepreciationBtn.addEventListener('click', downloadDepreciationCSV);
+        doubleDecliningCheckbox.addEventListener('change', () => {
+            document.getElementById('depreciation-rate').disabled = doubleDecliningCheckbox.checked;
+        });
+        
+        function calculateDepreciation() {
+            const cost = parseFloat(document.getElementById('asset-cost').value);
+            const salvage = parseFloat(document.getElementById('salvage-value').value);
+            const life = parseInt(document.getElementById('useful-life').value);
+            const method = depreciationMethod.value;
+            
+            // Validate inputs
+            if (!cost || !salvage === undefined || !life) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (cost <= 0 || life <= 0) {
+                alert('Cost and useful life must be greater than zero');
+                return;
+            }
+            
+            if (salvage < 0 || salvage > cost) {
+                alert('Salvage value must be between 0 and cost');
+                return;
+            }
+            
+            let annualDepreciation = 0;
+            let depreciationRate = 0;
+            
+            if (method === 'straight-line') {
+                annualDepreciation = (cost - salvage) / life;
+            } else {
+                // Declining balance method
+                if (doubleDecliningCheckbox.checked) {
+                    depreciationRate = 2 / life;
+                } else {
+                    depreciationRate = parseFloat(document.getElementById('depreciation-rate').value) / 100;
+                }
+                
+                annualDepreciation = cost * depreciationRate;
+            }
+            
+            const totalDepreciation = cost - salvage;
+            
+            // Display results
+            document.getElementById('annual-depreciation').textContent = formatCurrency(annualDepreciation);
+            document.getElementById('total-depreciation').textContent = formatCurrency(totalDepreciation);
+            
+            // Generate depreciation schedule
+            generateDepreciationSchedule(cost, salvage, life, method, depreciationRate);
+        }
+        
+        function generateDepreciationSchedule(cost, salvage, life, method, rate) {
+            const tableBody = document.querySelector('#depreciation-table tbody');
+            tableBody.innerHTML = '';
+            
+            let beginningValue = cost;
+            let accumulatedDepreciation = 0;
+            
+            for (let year = 1; year <= life; year++) {
+                let depreciation = 0;
+                
+                if (method === 'straight-line') {
+                    depreciation = (cost - salvage) / life;
+                } else {
+                    // Declining balance method
+                    depreciation = beginningValue * rate;
+                    
+                    // Ensure we don't depreciate below salvage value
+                    if (beginningValue - depreciation < salvage) {
+                        depreciation = beginningValue - salvage;
+                    }
+                }
+                
+                accumulatedDepreciation += depreciation;
+                const endingValue = beginningValue - depreciation;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${year}</td>
+                    <td>${formatCurrency(beginningValue)}</td>
+                    <td>${formatCurrency(depreciation)}</td>
+                    <td>${formatCurrency(accumulatedDepreciation)}</td>
+                    <td>${formatCurrency(endingValue)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+                beginningValue = endingValue;
+                
+                // Stop if we've reached salvage value
+                if (beginningValue <= salvage) break;
+            }
+        }
+        
+        function downloadDepreciationCSV() {
+            const rows = [];
+            const headers = ['Year', 'Beginning Value', 'Depreciation', 'Accumulated Depreciation', 'Ending Value'];
+            rows.push(headers.join(','));
+            
+            const tableRows = document.querySelectorAll('#depreciation-table tbody tr');
+            tableRows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const rowData = [];
+                cols.forEach(col => {
+                    // Extract text without HTML tags
+                    let text = col.textContent;
+                    // Remove currency symbols and commas for CSV
+                    text = text.replace(/[^\d.-]/g, '');
+                    rowData.push(text);
+                });
+                rows.push(rowData.join(','));
+            });
+            
+            const csvContent = rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'depreciation_schedule.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Investment Calculator
+        const investmentType = document.getElementById('investment-type');
+        const calculateInvestmentBtn = document.getElementById('calculate-investment');
+        const showInvestmentCalculationBtn = document.getElementById('show-investment-calculation');
+        const investmentCalculationDetails = document.getElementById('investment-calculation-details');
+        const investmentChart = document.getElementById('investment-chart');
+        
+        // Toggle SIP/lumpsum specific fields
+        investmentType.addEventListener('change', () => {
+            document.querySelectorAll('.sip-only, .lumpsum-only').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.' + investmentType.value + '-only').forEach(el => {
+                el.style.display = 'block';
+            });
+            
+            // Update tenure type options
+            const tenureTypeSelect = document.getElementById('investment-tenure-type');
+            if (investmentType.value === 'sip') {
+                tenureTypeSelect.innerHTML = '<option value="years">Years</option><option value="months">Months</option>';
+            } else {
+                tenureTypeSelect.innerHTML = '<option value="years">Years</option>';
+            }
+        });
+        
+        calculateInvestmentBtn.addEventListener('click', calculateInvestment);
+        showInvestmentCalculationBtn.addEventListener('click', () => {
+            investmentCalculationDetails.classList.toggle('active');
+            showInvestmentCalculationBtn.textContent = investmentCalculationDetails.classList.contains('active') ? 
+                'Hide Calculation Details' : 'Show Calculation Details';
+        });
+        
+        function calculateInvestment() {
+            const type = investmentType.value;
+            const amount = parseFloat(document.getElementById('investment-amount').value);
+            const expectedReturn = parseFloat(document.getElementById('expected-return').value);
+            const tenure = parseFloat(document.getElementById('investment-tenure').value);
+            const tenureType = document.getElementById('investment-tenure-type').value;
+            
+            // Validate inputs
+            if (!amount || !expectedReturn || !tenure) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (amount <= 0 || expectedReturn <= 0 || tenure <= 0) {
+                alert('Values must be greater than zero');
+                return;
+            }
+            
+            let totalInvested = amount;
+            let maturityValue = 0;
+            let estimatedReturns = 0;
+            
+            if (type === 'sip') {
+                // Convert tenure to months if in years
+                const months = tenureType === 'years' ? tenure * 12 : tenure;
+                totalInvested = amount * months;
+                
+                // Calculate SIP maturity value
+                const monthlyRate = expectedReturn / 12 / 100;
+                maturityValue = amount * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate * (1 + monthlyRate);
+            } else {
+                // Lumpsum calculation
+                const years = tenure;
+                maturityValue = amount * Math.pow(1 + expectedReturn / 100, years);
+            }
+            
+            estimatedReturns = maturityValue - totalInvested;
+            
+            // Display results
+            document.getElementById('total-invested').textContent = formatCurrency(totalInvested);
+            document.getElementById('investment-maturity').textContent = formatCurrency(maturityValue);
+            document.getElementById('estimated-returns').textContent = formatCurrency(estimatedReturns);
+            
+            // Draw investment growth chart
+            drawInvestmentChart(type, amount, expectedReturn, tenure, tenureType, totalInvested, maturityValue);
+        }
+        
+        function drawInvestmentChart(type, amount, rate, tenure, tenureType, totalInvested, maturityValue) {
+            const canvas = document.getElementById('investment-chart');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear previous chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Simple chart drawing for demonstration
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+            
+            // Draw axes
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.strokeStyle = '#4361ee';
+            ctx.stroke();
+            
+            // Draw data points
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            
+            const years = tenureType === 'years' ? tenure : tenure / 12;
+            const points = 10;
+            
+            for (let i = 1; i <= points; i++) {
+                const x = padding + (i / points) * (width - 2 * padding);
+                const progress = i / points;
+                
+                let value;
+                if (type === 'sip') {
+                    const months = tenureType === 'years' ? tenure * 12 * progress : tenure * progress;
+                    const monthlyRate = rate / 12 / 100;
+                    value = amount * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate * (1 + monthlyRate);
+                } else {
+                    value = amount * Math.pow(1 + rate / 100, years * progress);
+                }
+                
+                const y = height - padding - (value / maturityValue) * (height - 2 * padding);
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.strokeStyle = '#f72585';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Add labels
+            ctx.fillStyle = '#4361ee';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Time', width / 2, height - 10);
+            ctx.save();
+            ctx.translate(10, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Value', 0, 0);
+            ctx.restore();
+        }
+        
+        // Currency Formatter
+        const formatAmountBtn = document.getElementById('format-amount');
+        formatAmountBtn.addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('amount-to-format').value);
+            const currency = document.getElementById('format-currency').value;
+            
+            if (!isNaN(amount)) {
+                document.getElementById('formatted-amount').textContent = formatCurrency(amount, currency);
+            }
+        });
+        
+        // Input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                const min = parseFloat(this.min) || 0;
+                const max = parseFloat(this.max) || Infinity;
+                
+                if (this.value !== '' && (isNaN(value) || value < min || value > max)) {
+                    this.classList.add('invalid');
+                } else {
+                    this.classList.remove('invalid');
+                }
+            });
+        });
+        
+        // Debounce function for real-time calculations
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Set up real-time calculations with debouncing
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', debounce(function() {
+                // Find the closest calculate button and trigger click
+                const card = this.closest('.card');
+                if (card) {
+                    const calculateBtn = card.querySelector('.btn-primary');
+                    if (calculateBtn && !calculateBtn.disabled) {
+                        calculateBtn.click();
+                    }
+                }
+            }, 300));
+        });
+        
+        // Initialize all calculators with default values
+        function initializeCalculators() {
+            // Set some default values for demonstration
+            document.getElementById('emi-principal').value = 1000000;
+            document.getElementById('emi-rate').value = 7.5;
+            document.getElementById('emi-tenure').value = 20;
+            
+            document.getElementById('interest-principal').value = 10000;
+            document.getElementById('interest-rate').value = 5;
+            document.getElementById('interest-time').value = 2;
+            
+            document.getElementById('initial-investment').value = 10000;
+            document.getElementById('final-value').value = 15000;
+            document.getElementById('investment-duration').value = 5;
+            
+            document.getElementById('asset-cost').value = 100000;
+            document.getElementById('salvage-value').value = 10000;
+            document.getElementById('useful-life').value = 5;
+            document.getElementById('depreciation-rate').value = 20;
+            
+            document.getElementById('investment-amount').value = 10000;
+            document.getElementById('expected-return').value = 12;
+            document.getElementById('investment-tenure').value = 10;
+            
+            document.getElementById('amount-to-format').value = 1234567.89;
+            
+            // Trigger calculations for all calculators
+            document.querySelectorAll('.btn-primary').forEach(btn => {
+                btn.click();
+            });
+        }
+        
+        // Run initialization after a short delay to allow DOM to fully load
+        setTimeout(initializeCalculators, 500);
+        
+        // Unit tests (can be run in console)
+        function runUnitTests() {
+            console.log('Running unit tests...');
+            
+            // Test EMI calculation
+            const emi = calculateEMIValue(1000000, 7.5, 20 * 12);
+            console.log('EMI Test:', Math.abs(emi - 8054.99) < 80.55 ? 'PASS' : 'FAIL'); // Allow 1% tolerance
+            
+            // Test compound interest
+            const maturity = calculateCompoundInterest(10000, 5, 2, 1);
+            console.log('Compound Interest Test:', maturity === 11025 ? 'PASS' : 'FAIL');
+            
+            // Test SIP calculation
+            const sipMaturity = calculateSIP(10000, 12, 10 * 12);
+            console.log('SIP Test:', Math.abs(sipMaturity - 2323397.32) < 23233.97 ? 'PASS' : 'FAIL'); // Allow 1% tolerance
+            
+            // Test straight-line depreciation
+            const depreciation = calculateStraightLineDepreciation(100000, 10000, 5);
+            console.log('Depreciation Test:', depreciation === 18000 ? 'PASS' : 'FAIL');
+        }
+        
+        // Calculation functions for testing
+        function calculateEMIValue(principal, annualRate, tenureMonths) {
+            const monthlyRate = annualRate / 12 / 100;
+            return principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths) / 
+                   (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+        }
+        
+        function calculateCompoundInterest(principal, annualRate, years, compoundingFrequency) {
+            const rateDecimal = annualRate / 100;
+            return principal * Math.pow(1 + rateDecimal / compoundingFrequency, compoundingFrequency * years);
+        }
+        
+        function calculateSIP(monthlyInvestment, annualRate, months) {
+            const monthlyRate = annualRate / 12 / 100;
+            return monthlyInvestment * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate * (1 + monthlyRate);
+        }
+        
+        function calculateStraightLineDepreciation(cost, salvage, life) {
+            return (cost - salvage) / life;
+        }
+        
+        // Expose test function to global scope for console access
+        window.runUnitTests = runUnitTests;
+    </script>
+</body>
+</html>
